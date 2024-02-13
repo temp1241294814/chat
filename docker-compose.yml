@@ -1,0 +1,36 @@
+version: '3'
+services:
+
+# FIX: poetry のインストール
+#  app:
+#    build: .
+#    ports:
+#      - 8000:8000
+#    command: uvicorn main:app --reload --host
+#    depends_on:
+#      - redis
+#      - firestore
+#      - mysql
+#    environment:
+#      - REDIS_HOST=redis://redis:6379
+#      - FIRESTORE_EMULATOR_HOST=firestore:8080
+#      - DB_URL=mysql+aiomysql://chatapp_user@chatapp_password:3306/chatapp?charset=utf8
+
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+
+  firestore:
+    image: google/cloud-sdk:emulators
+    ports:
+      - 8080:8080
+    command: gcloud beta emulators firestore start --host-port=firestore:8080
+
+  mysql:
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=chatapp
+      - MYSQL_USER=chatapp_user
+      - MYSQL_PASSWORD=chatapp_password

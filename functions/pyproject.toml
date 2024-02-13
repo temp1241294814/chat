@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "functions"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+functions-framework = "^3.5.0"
+sendgrid = "^6.11.0"
+firebase-admin = "^6.4.0"
+google-cloud-pubsub = "^2.19.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
