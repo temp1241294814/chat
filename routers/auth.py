@@ -34,10 +34,7 @@ async def login(
     """ログイン"""
     user = await User.authenticate_user(db, body.username, body.password)
     if user is None:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid username or password"
-        )
+        raise HTTPException(status_code=401, detail="Invalid username or password")
 
     access_token = generate_token()
     # トークンを保存しておく(1週間)

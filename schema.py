@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 from typing import Literal
 
-from requests import session
 
 
 class User(BaseModel):

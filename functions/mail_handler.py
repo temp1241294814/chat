@@ -31,5 +31,5 @@ def handle_email(request):
         # Send the email
         sg.send(email)
         return "ok", 200
-    except Exception as e:
+    except Exception:
         return "error", 500

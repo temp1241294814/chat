@@ -2,7 +2,6 @@ import asyncio
 import json
 import uuid
 from fastapi import APIRouter, WebSocket
-from requests import session
 from aggregation import NotificationAggregation
 
 from dependencies import RDBSession, RedisClient
@@ -37,19 +36,24 @@ async def ws_from_client(
         match client_event.event_type:
             case "post":
                 msg = await message_store.post_message(client_event.message)  # type: ignore
-                server_event = ServerEvent(session_id=session_id, event_type="post", message=msg)
+                server_event = ServerEvent(
+                    session_id=session_id, event_type="post", message=msg
+                )
             case "delete":
                 msg = await message_store.delete_message(client_event.message_id)  # type: ignore
                 server_event = ServerEvent(
                     session_id=session_id,
-                    event_type="delete", message_id=msg.message_id
+                    event_type="delete",
+                    message_id=msg.message_id,
                 )
             case "mark":
                 # 大小比較してもよいが、既読を巻き戻すこともありうるので、とりあえずはそのまま
                 await redis_client.hset(f"marks:{room_id}", str(user_id), client_event.message_id)  # type: ignore
                 server_event = ServerEvent(
                     session_id=session_id,
-                    event_type="mark", message_id=client_event.message_id, user_id=user_id
+                    event_type="mark",
+                    message_id=client_event.message_id,
+                    user_id=user_id,
                 )
 
         if server_event:
@@ -82,7 +86,7 @@ async def _notify(db, user_id, room_id, client_event, redis_client):
         "user_name": user_id,
         "room_id": room_id,
         "message": f"{user.username}: {client_event.message}",
-        "tokens": []
+        "tokens": [],
     }
     for notification in notifications:
         if notification.user_id in active_users:
@@ -115,7 +119,7 @@ async def ws_from_another(
                 # 自分が送信した既読は無視する
                 continue
             del data["session_id"]
-    
+
             await websocket.send_json(data)
 
 
@@ -125,7 +129,7 @@ async def websocket_endpoint(
 ):
     # サーバーを識別するためのセッションIDを生成
     session_id = uuid.uuid4().hex
-    
+
     await websocket.accept()
 
     # token JSONを受け取る
@@ -151,7 +155,9 @@ async def websocket_endpoint(
         await pubsub.subscribe(channel(room_id))
         task1 = asyncio.create_task(ws_from_another(pubsub, websocket, session_id))
         task2 = asyncio.create_task(
-            ws_from_client(store, redis_client, websocket, db, room_id, user_id, session_id)
+            ws_from_client(
+                store, redis_client, websocket, db, room_id, user_id, session_id
+            )
         )
 
         # 初期データを送信

@@ -1,24 +1,29 @@
 import asyncio
-from email import message
 import json
 import websockets
-from datetime import datetime
 import httpx
 import random
+
 
 def random_string(n=10):
     return "".join(random.choices("abcdefghijklmnopqrstuvwxyz", k=n))
 
+
 async def ws(room_id, user, solo=False):
 
     async with httpx.AsyncClient() as client:
-        await client.post("http://localhost:8000/login", json={
-            "username": user["username"],
-            "password": "password",
-        })
+        await client.post(
+            "http://localhost:8000/login",
+            json={
+                "username": user["username"],
+                "password": "password",
+            },
+        )
         token = client.cookies["sessionid"]
 
-    async with websockets.connect(f"ws://localhost:8000/rooms/{room_id}/ws") as websocket:
+    async with websockets.connect(
+        f"ws://localhost:8000/rooms/{room_id}/ws"
+    ) as websocket:
         # 最初にトークンを送信
         await websocket.send(json.dumps({"token": token}))
 
@@ -31,7 +36,14 @@ async def ws(room_id, user, solo=False):
 
         for i in range(5):
             # メッセージを送信
-            await websocket.send(json.dumps({"event_type": "post", "message": f"Hello, World ({i+1}/5) from {user['username']}!"}))
+            await websocket.send(
+                json.dumps(
+                    {
+                        "event_type": "post",
+                        "message": f"Hello, World ({i+1}/5) from {user['username']}!",
+                    }
+                )
+            )
             await asyncio.sleep(0.5)
 
         for i in range(20):
@@ -40,7 +52,12 @@ async def ws(room_id, user, solo=False):
             if response.get("event_type") == "post":
                 # メッセージを受信したら既読にする
                 await websocket.send(
-                    json.dumps({"event_type": "mark", "message_id": response.get("message", {}).get("message_id")})
+                    json.dumps(
+                        {
+                            "event_type": "mark",
+                            "message_id": response.get("message", {}).get("message_id"),
+                        }
+                    )
                 )
 
 
@@ -50,31 +67,43 @@ async def test_scenario():
     room = None
     async with httpx.AsyncClient() as client:
         for _ in range(5):
-            res = await client.post("http://localhost:8000/register", json={
-                "username": random_string(),
-                "password": "password",
-                "email": f"{random_string()}@example.com",
-            })
+            res = await client.post(
+                "http://localhost:8000/register",
+                json={
+                    "username": random_string(),
+                    "password": "password",
+                    "email": f"{random_string()}@example.com",
+                },
+            )
             users.append(res.json())
 
         # ログイン
-        await client.post("http://localhost:8000/login", json={
-            "username": users[0]["username"],
-            "password": "password",
-        })
+        await client.post(
+            "http://localhost:8000/login",
+            json={
+                "username": users[0]["username"],
+                "password": "password",
+            },
+        )
 
-        res = await client.post("http://localhost:8000/rooms", json={
-            "room_type": "group",
-            "room_name": "test_room_" + random_string(),
-            "initial_members": [user["user_id"] for user in users],
-        })
+        res = await client.post(
+            "http://localhost:8000/rooms",
+            json={
+                "room_type": "group",
+                "room_name": "test_room_" + random_string(),
+                "initial_members": [user["user_id"] for user in users],
+            },
+        )
         room = res.json()
 
         # Eメール通知を設定
-        await client.post("http://localhost:8000/settings/notification", json={
-            "notification_type": "email",
-        })
-    
+        await client.post(
+            "http://localhost:8000/settings/notification",
+            json={
+                "notification_type": "email",
+            },
+        )
+
     t1 = asyncio.create_task(ws(room["room_id"], users[1]))
     t2 = asyncio.create_task(ws(room["room_id"], users[2]))
 

@@ -1,9 +1,5 @@
-import json
-import os
 from typing import Literal
-from google.cloud import pubsub_v1
 
-from aggregation import NotificationAggregation
 
 # Pubsubがないのでコメントアウト
 

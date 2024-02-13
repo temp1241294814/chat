@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, WebSocket
+from fastapi import APIRouter, HTTPException
 from models import Room, RoomMember
 from dependencies import CurrentUser, RDBSession
 import schema

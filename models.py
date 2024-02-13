@@ -1,8 +1,6 @@
 # ORMのモデルを定義するファイル
 # cf. https://fastapi-users.github.io/fastapi-users/12.1/configuration/databases/sqlalchemy/
 
-from tkinter import NO
-from typing import Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import (
     Column,

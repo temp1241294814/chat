@@ -38,7 +38,7 @@ class NotificationAggregation:
         )
         res = await session.execute(sql)
         ret = {}
-        
+
         for row in res:
             notification = row.NotificationSettings
             if notification.notification_type == "push":
